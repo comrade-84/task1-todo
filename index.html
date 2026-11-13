@@ -17,7 +17,7 @@
     </header>
 
     <section class="todo-card" aria-labelledby="list-heading">
-      <form class="add-form" id="add-form">
+      <form class="add-form" id="add-form" novalidate>
         <label class="sr-only" for="task-input">Add a task</label>
         <input
           id="task-input"
@@ -26,11 +26,12 @@
           placeholder="What needs to get done?"
           maxlength="100"
           autocomplete="off"
-          required
+          aria-invalid="false"
         >
         <button class="button button-primary" type="submit">Add task</button>
       </form>
 
+      <p class="field-error" id="task-error" aria-live="polite" hidden></p>
       <p class="storage-message" id="storage-message" role="status" hidden></p>
 
       <div class="list-heading">

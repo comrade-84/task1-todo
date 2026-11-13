@@ -1,18 +1,38 @@
 const STORAGE_KEY = "my-todo-list";
 
-const addForm = document.querySelector("#add-form");
-const taskInput = document.querySelector("#task-input");
-const taskList = document.querySelector("#task-list");
-const taskCount = document.querySelector("#task-count");
-const clearCompletedButton = document.querySelector("#clear-completed");
-const storageMessage = document.querySelector("#storage-message");
-const filterButtons = document.querySelectorAll("[data-filter]");
+const addForm = typeof document !== "undefined" ? document.querySelector("#add-form") : null;
+const taskInput = typeof document !== "undefined" ? document.querySelector("#task-input") : null;
+const taskList = typeof document !== "undefined" ? document.querySelector("#task-list") : null;
+const taskCount = typeof document !== "undefined" ? document.querySelector("#task-count") : null;
+const clearCompletedButton = typeof document !== "undefined" ? document.querySelector("#clear-completed") : null;
+const storageMessage = typeof document !== "undefined" ? document.querySelector("#storage-message") : null;
+const taskError = typeof document !== "undefined" ? document.querySelector("#task-error") : null;
+const filterButtons = typeof document !== "undefined" ? document.querySelectorAll("[data-filter]") : [];
 
 let tasks = loadTasks();
 let currentFilter = "all";
 let editingTaskId = null;
 
+function validateTaskText(value) {
+  if (value.trim() === "") {
+    return "Please enter a task before adding it.";
+  }
+
+  return "";
+}
+
+function showTaskError(message) {
+  if (!taskError || !taskInput) return;
+
+  taskError.textContent = message;
+  taskError.hidden = message === "";
+  taskInput.setAttribute("aria-invalid", message ? "true" : "false");
+  taskInput.classList.toggle("is-invalid", message !== "");
+}
+
 function loadTasks() {
+  if (typeof localStorage === "undefined") return [];
+
   try {
     const savedTasks = localStorage.getItem(STORAGE_KEY);
     if (!savedTasks) return [];
@@ -37,6 +57,8 @@ function loadTasks() {
 }
 
 function saveTasks() {
+  if (typeof localStorage === "undefined") return;
+
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     showStorageMessage("");
@@ -47,11 +69,15 @@ function saveTasks() {
 }
 
 function showStorageMessage(message) {
+  if (!storageMessage) return;
+
   storageMessage.textContent = message;
   storageMessage.hidden = message === "";
 }
 
 function renderTasks() {
+  if (!taskList || !taskCount || !clearCompletedButton) return;
+
   taskList.replaceChildren();
 
   let tasksLeft = 0;
@@ -111,7 +137,7 @@ function createTaskElement(task, taskId) {
     editInput.maxLength = 100;
     editInput.value = task.text;
     editInput.setAttribute("aria-label", "Edit task");
-    editInput.required = true;
+    editInput.setAttribute("aria-invalid", "false");
 
     const saveButton = document.createElement("button");
     saveButton.className = "task-action";
@@ -167,24 +193,37 @@ function createTaskElement(task, taskId) {
   return item;
 }
 
-addForm.addEventListener("submit", (event) => {
-  event.preventDefault();
+if (addForm && taskInput) {
+  addForm.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-  const text = taskInput.value.trim();
-  if (text === "") {
+    const text = taskInput.value.trim();
+    const errorMessage = validateTaskText(text);
+
+    if (errorMessage) {
+      showTaskError(errorMessage);
+      taskInput.focus();
+      return;
+    }
+
+    showTaskError("");
+    tasks.unshift({ text: text, completed: false });
+    editingTaskId = null;
+    taskInput.value = "";
+    saveTasks();
+    renderTasks();
     taskInput.focus();
-    return;
-  }
+  });
 
-  tasks.unshift({ text: text, completed: false });
-  editingTaskId = null;
-  taskInput.value = "";
-  saveTasks();
-  renderTasks();
-  taskInput.focus();
-});
+  taskInput.addEventListener("input", () => {
+    if (taskInput.value.trim() !== "") {
+      showTaskError("");
+    }
+  });
+}
 
-taskList.addEventListener("click", (event) => {
+if (taskList) {
+  taskList.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");
   const item = event.target.closest(".task-item");
   if (!button || !item) return;
@@ -208,45 +247,53 @@ taskList.addEventListener("click", (event) => {
   }
 });
 
-taskList.addEventListener("change", (event) => {
-  if (event.target.dataset.action !== "toggle") return;
+  taskList.addEventListener("change", (event) => {
+    if (event.target.dataset.action !== "toggle") return;
 
-  const item = event.target.closest(".task-item");
-  const taskIndex = Number(item.dataset.id) - 1;
-  tasks[taskIndex].completed = event.target.checked;
+    const item = event.target.closest(".task-item");
+    const taskIndex = Number(item.dataset.id) - 1;
+    tasks[taskIndex].completed = event.target.checked;
 
-  saveTasks();
-  renderTasks();
-});
+    saveTasks();
+    renderTasks();
+  });
 
-taskList.addEventListener("submit", (event) => {
-  if (event.target.dataset.action !== "edit") return;
-  event.preventDefault();
+  taskList.addEventListener("submit", (event) => {
+    if (event.target.dataset.action !== "edit") return;
+    event.preventDefault();
 
-  saveEditedTask(event.target.closest(".task-item"));
-});
+    saveEditedTask(event.target.closest(".task-item"));
+  });
+}
 
 function saveEditedTask(item) {
   const taskIndex = Number(item.dataset.id) - 1;
   const editInput = item.querySelector(".edit-input");
   const text = editInput.value.trim();
+
   if (text === "") {
+    editInput.setAttribute("aria-invalid", "true");
+    editInput.classList.add("is-invalid");
     editInput.focus();
     return;
   }
 
+  editInput.setAttribute("aria-invalid", "false");
+  editInput.classList.remove("is-invalid");
   tasks[taskIndex].text = text;
   editingTaskId = null;
   saveTasks();
   renderTasks();
 }
 
-taskList.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && event.target.matches(".edit-input")) {
-    editingTaskId = null;
-    renderTasks();
-  }
-});
+if (taskList) {
+  taskList.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && event.target.matches(".edit-input")) {
+      editingTaskId = null;
+      renderTasks();
+    }
+  });
+}
 
 filterButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -262,10 +309,18 @@ filterButtons.forEach((button) => {
   });
 });
 
-clearCompletedButton.addEventListener("click", () => {
-  tasks = tasks.filter((task) => !task.completed);
-  saveTasks();
-  renderTasks();
-});
+if (clearCompletedButton) {
+  clearCompletedButton.addEventListener("click", () => {
+    tasks = tasks.filter((task) => !task.completed);
+    saveTasks();
+    renderTasks();
+  });
+}
 
-renderTasks();
+if (typeof document !== "undefined") {
+  renderTasks();
+}
+
+if (typeof module !== "undefined") {
+  module.exports = { validateTaskText };
+}

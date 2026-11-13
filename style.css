@@ -121,14 +121,29 @@ h1 {
   background: var(--blue-dark);
 }
 
+.field-error,
 .storage-message {
   margin: 14px 0 0;
   padding: 10px 12px;
   border-radius: 8px;
-  color: #8b3c18;
-  background: #fff2e8;
   font-size: 14px;
   line-height: 1.45;
+}
+
+.field-error {
+  color: #b42318;
+  background: #fff1f2;
+}
+
+.storage-message {
+  color: #8b3c18;
+  background: #fff2e8;
+}
+
+.add-form input.is-invalid,
+.edit-input.is-invalid {
+  border-color: #d92d20;
+  box-shadow: 0 0 0 3px rgb(217 45 32 / 10%);
 }
 
 .list-heading {
