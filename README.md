@@ -1,18 +1,23 @@
 # My To-Do Notes
 
-Hey, this little project is meant to keep things simple and easy to manage. It helps me list tasks, check what is done, and stay organized without making the page feel too busy.
+This project is a simple task manager designed to help users organize their daily activities in a clear and easy way. It allows tasks to be added, marked as complete, and removed when they are no longer needed.
 
-I wanted it to feel clean and friendly, so the layout is straightforward and easy to use.
+The interface is kept clean and user-friendly so the experience feels smooth and efficient. It focuses on simplicity, productivity, and ease of use without making the app feel overwhelming.
 
-## What it does
+## Features
 
-- Add a new task
-- Mark a task as done
-- Remove tasks when they are no longer needed
-- Keep the list easy to follow
+- Add new tasks
+- Mark tasks as completed
+- Remove tasks
+- Keep the list organized and easy to follow
 
-## Quick reminder
+## Skills Used
 
-A good to-do list should not be complicated. It should help me stay focused and get things done without extra stress.
+- HTML
+- CSS
+- JavaScript
+- DOM manipulation
+- Local storage
+- User interface design
 
-This is just a simple note to keep the project feeling personal and easy to work with.
+This is a lightweight project that helps with everyday planning and keeps things manageable.
